@@ -1,0 +1,9 @@
+.env
+
+# Ignore Python bytecode and cache files in the finance directory
+finance/__pycache__/
+finance/*.pyc
+finance/*.pyo
+
+# Ignore user-uploaded media files
+media/

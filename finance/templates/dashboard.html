@@ -1,0 +1,134 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fair Cashier - Dashboard</title>
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="dashboard-container">
+
+    <!-- Header -->
+    <header class="header">
+      
+      <a href="{% url 'mainAppDemo' %}" class="nav-link">Back To Main App</a>
+    
+      <h1>Track your investment with Fair Cashier!</h1>
+      <p>Your transparent microfinance solution. Buy, Sell, and Share points with ease.</p>
+    </header>
+
+    <!-- Points Balance -->
+    <section class="card points-balance">
+      <h2>Your Points Balance</h2>
+      <p class="balance">10,000 <span>Points</span></p>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="quick-actions">
+      <h2>Quick Actions</h2>
+      <div class="action-buttons">
+        <button class="btn buy-points" onclick="openBuyPointsModal()">Buy Points</button>
+        <button class="btn convert-points" onclick="openConvertPointsModal()">Sell Points</button>
+        <button class="btn send-money" onclick="openSendMoneyModal()">Share Points</button>
+        <button class="btn profile" onclick="openProfileModal()">Update Profile</button>
+      </div>
+    </section>
+
+    <!-- Transaction History -->
+    <section class="card transaction-history">
+      <h2>Transaction History</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>2023-10-01</td>
+            <td>Buy Points</td>
+            <td>+5,000</td>
+            <td>Completed</td>
+          </tr>
+          <tr>
+            <td>2023-10-02</td>
+            <td>Send Money</td>
+            <td>-2,000</td>
+            <td>Completed</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Modals -->
+    <div id="buyPointsModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal('buyPointsModal')">&times;</span>
+        <h2>Buy Points</h2>
+        <form>
+          <label for="amount">Amount</label>
+          <input type="number" id="amount" placeholder="Enter amount" required>
+          <label for="paymentMethod">Payment Method</label>
+          <select id="paymentMethod" required>
+            <option value="MTN">MTN Mobile Money</option>
+            <option value="Airtel">Airtel Mobile Money</option>
+            <option value="Visa">Visa Credit Card</option>
+          </select>
+          <button type="submit" class="btn">Buy Now</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="convertPointsModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal('convertPointsModal')">&times;</span>
+        <h2>Convert Points to Cash</h2>
+        <form>
+          <label for="points">Points to Convert</label>
+          <input type="number" id="points" placeholder="Enter points" required>
+          <label for="accountDetails">Account Details</label>
+          <input type="text" id="accountDetails" placeholder="Mobile number or bank account" required>
+          <button type="submit" class="btn">Convert Now</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="sendMoneyModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal('sendMoneyModal')">&times;</span>
+        <h2>Send Money</h2>
+        <form>
+          <label for="recipient">Recipient's Account</label>
+          <input type="text" id="recipient" placeholder="Enter recipient's mobile or account number" required>
+          <label for="sendAmount">Amount</label>
+          <input type="number" id="sendAmount" placeholder="Enter amount" required>
+          <button type="submit" class="btn">Send Now</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="profileModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal('profileModal')">&times;</span>
+        <h2>Update Profile</h2>
+        <form>
+          <label for="phone">Phone Number</label>
+          <input type="text" id="phone" placeholder="Enter new phone number" required>
+          <label for="bankAccount">Bank Account</label>
+          <input type="text" id="bankAccount" placeholder="Enter new bank account" required>
+          <button type="submit" class="btn">Update</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="{% static 'js/dashboard.js' %}"></script>
+</body>
+</html>

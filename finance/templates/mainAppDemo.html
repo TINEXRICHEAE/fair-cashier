@@ -1,0 +1,60 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Main App Demo - Earn or Use Points</title>
+  <link rel="stylesheet" href="{% static 'css/mainAppDemo.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="main-app-container">
+    <!-- Live Status Bar -->
+    <div class="status-bar">
+      <div class="status-progress" id="statusProgress"></div>
+    </div>
+
+    <!-- Points Display -->
+    <div class="points-display">
+      <h2>Your Points</h2>
+      <p id="pointsBalance">1,000</p>
+    </div>
+    <!-- Dashboard Link -->
+      <a href="{% url 'dashboard' %}" class="nav-link">View Details</a> <!-- Use the same class for the link -->
+    
+    <!-- User Clicks Section -->
+    <section class="action-area">
+      <h2>User Clicks</h2>
+      <div class="buttons">
+        <button class="btn earn" onclick="earnPoints('clicks', 10)">Earn +10</button>
+        <button class="btn use" onclick="usePoints('clicks', 5)">Use -5</button>
+      </div>
+    </section>
+
+    <!-- Data Transferred Section -->
+    <section class="action-area">
+      <h2>Data Transferred (Bytes)</h2>
+      <div class="buttons">
+        <button class="btn earn" onclick="earnPoints('data', 100)">Earn +100</button>
+        <button class="btn use" onclick="usePoints('data', 50)">Use -50</button>
+      </div>
+    </section>
+
+    <!-- Time Spent Section -->
+    <section class="action-area">
+      <h2>Time Spent</h2>
+      <div class="time-counters">
+        <p>Total Time: <span id="totalTime">00:00:00</span></p>
+        <p>Session Time: <span id="sessionTime">00:00:00</span></p>
+      </div>
+      <div class="buttons">
+        <button class="btn earn" onclick="earnPoints('time', 30)">Earn +30</button>
+        <button class="btn use" onclick="usePoints('time', 15)">Use -15</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="{% static 'js/mainAppDemo.js' %}"></script>
+</body>
+</html>

@@ -9,6 +9,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
+  <!-- Add this logout button to your dashboard -->
+<nav class="navbar">
+  <div class="nav-right">
+    {% if user.is_authenticated %}
+      <button class="btn logout" onclick="logoutUser()">Logout</button>
+    {% else %}
+      <a href="{% url 'login_user' %}" class="btn login">Login</a>
+    {% endif %}
+  </div>
+</nav>
   <div class="main-app-container">
     <!-- Live Status Bar -->
     <div class="status-bar">
@@ -27,8 +37,8 @@
     <section class="action-area">
       <h2>User Clicks</h2>
       <div class="buttons">
-        <button class="btn earn" onclick="earnPoints('clicks', 10)">Earn +10</button>
-        <button class="btn use" onclick="usePoints('clicks', 5)">Use -5</button>
+        <button class="btn earn" onclick="checkAuthAndExecute(() => earnPoints('clicks', 10))">Earn +10</button>
+        <button class="btn use" onclick="checkAuthAndExecute(() => usePoints('clicks', 5))">Use -5</button>
       </div>
     </section>
 
@@ -36,8 +46,8 @@
     <section class="action-area">
       <h2>Data Transferred (Bytes)</h2>
       <div class="buttons">
-        <button class="btn earn" onclick="earnPoints('data', 100)">Earn +100</button>
-        <button class="btn use" onclick="usePoints('data', 50)">Use -50</button>
+        <button class="btn earn" onclick="checkAuthAndExecute(() => earnPoints('data', 100))">Earn +100</button>
+        <button class="btn use" onclick="checkAuthAndExecute(() => usePoints('data', 50))">Use -50</button>
       </div>
     </section>
 
@@ -49,10 +59,22 @@
         <p>Session Time: <span id="sessionTime">00:00:00</span></p>
       </div>
       <div class="buttons">
-        <button class="btn earn" onclick="earnPoints('time', 30)">Earn +30</button>
-        <button class="btn use" onclick="usePoints('time', 15)">Use -15</button>
+        <button class="btn earn" onclick="checkAuthAndExecute(() => earnPoints('time', 30))">Earn +30</button>
+        <button class="btn use" onclick="checkAuthAndExecute(() => usePoints('time', 15))">Use -15</button>
       </div>
     </section>
+    <!-- Login Prompt Modal -->
+<div id="loginPromptModal" class="loginPromptModal" style="display: none;">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal('loginPromptModal')">&times;</span>
+    <h2>Authentication Required</h2>
+    <p>You need to log in to perform this action.</p>
+    <div class="modal-buttons">
+      <button class="btn login" onclick="redirectToLogin()">Login</button>
+      <button class="btn" onclick="closeModal('loginPromptModal')">Not Now</button>
+    </div>
+  </div>
+</div>
   </div>
 
   <script src="{% static 'js/mainAppDemo.js' %}"></script>

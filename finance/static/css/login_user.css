@@ -1,0 +1,116 @@
+/* General Styles */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f4f7fa;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  .login-container {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+  
+  h1 {
+    font-size: 2rem;
+    color: #2c3e50;
+    margin-bottom: 10px;
+  }
+  
+  p {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+    margin-bottom: 20px;
+  }
+  
+  /* Form Styles */
+  .form-group {
+    margin-bottom: 20px;
+    text-align: left;
+  }
+  
+  label {
+    font-size: 0.9rem;
+    color: #34495e;
+    display: block;
+    margin-bottom: 5px;
+  }
+  
+  input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    outline: none;
+  }
+  
+  input:focus {
+    border-color: #3498db;
+  }
+  
+  .error-message {
+    font-size: 0.8rem;
+    color: #e74c3c;
+    display: none;
+  }
+  
+  /* Button Styles */
+  .btn {
+    width: 100%;
+    padding: 10px;
+    background: #3498db;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .btn:hover {
+    background: #2980b9;
+  }
+  
+  /* Message Box Styles */
+  .message-box {
+    margin-top: 20px;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    display: none;
+  }
+  
+  .message-box.success {
+    background: #d5f5e3;
+    color: #27ae60;
+  }
+  
+  .message-box.error {
+    background: #f8d7da;
+    color: #e74c3c;
+  }
+  
+  /* Register Link */
+  .register-link {
+    margin-top: 20px;
+    font-size: 0.9rem;
+  }
+  
+  .register-link a {
+    color: #3498db;
+    text-decoration: none;
+  }
+  
+  .register-link a:hover {
+    text-decoration: underline;
+  }

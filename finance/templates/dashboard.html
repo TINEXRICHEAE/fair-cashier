@@ -10,6 +10,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
+  <!-- Add this logout button to your dashboard -->
+<nav class="navbar">
+  <div class="nav-right">
+    {% if user.is_authenticated %}
+      <button class="btn logout" onclick="logoutUser()">Logout</button>
+    {% else %}
+      <a href="{% url 'login_user' %}" class="btn login">Login</a>
+    {% endif %}
+  </div>
+</nav>
   <div class="dashboard-container">
 
     <!-- Header -->
@@ -72,7 +82,7 @@
       <div class="modal-content">
         <span class="close" onclick="closeModal('buyPointsModal')">&times;</span>
         <h2>Buy Points</h2>
-        <form>
+        <form onsubmit="checkAuthAndExecute(() => { /* Add your buy points logic here */ }); return false;">
           <label for="amount">Amount</label>
           <input type="number" id="amount" placeholder="Enter amount" required>
           <label for="paymentMethod">Payment Method</label>
@@ -90,7 +100,7 @@
       <div class="modal-content">
         <span class="close" onclick="closeModal('convertPointsModal')">&times;</span>
         <h2>Convert Points to Cash</h2>
-        <form>
+        <form onsubmit="checkAuthAndExecute(() => { /* Add your convert points logic here */ }); return false;">
           <label for="points">Points to Convert</label>
           <input type="number" id="points" placeholder="Enter points" required>
           <label for="accountDetails">Account Details</label>
@@ -104,7 +114,7 @@
       <div class="modal-content">
         <span class="close" onclick="closeModal('sendMoneyModal')">&times;</span>
         <h2>Send Money</h2>
-        <form>
+        <form onsubmit="checkAuthAndExecute(() => { /* Add your send money logic here */ }); return false;">
           <label for="recipient">Recipient's Account</label>
           <input type="text" id="recipient" placeholder="Enter recipient's mobile or account number" required>
           <label for="sendAmount">Amount</label>
@@ -118,13 +128,26 @@
       <div class="modal-content">
         <span class="close" onclick="closeModal('profileModal')">&times;</span>
         <h2>Update Profile</h2>
-        <form>
+        <form onsubmit="checkAuthAndExecute(() => { /* Add your update profile logic here */ }); return false;">
           <label for="phone">Phone Number</label>
           <input type="text" id="phone" placeholder="Enter new phone number" required>
           <label for="bankAccount">Bank Account</label>
           <input type="text" id="bankAccount" placeholder="Enter new bank account" required>
           <button type="submit" class="btn">Update</button>
         </form>
+      </div>
+    </div>
+
+    <!-- Login Prompt Modal -->
+    <div id="loginPromptModal" class="loginPromptModal" style="display: none;">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal('loginPromptModal')">&times;</span>
+        <h2>Authentication Required</h2>
+        <p>You need to log in to perform this action.</p>
+        <div class="modal-buttons">
+          <button class="btn login" onclick="redirectToLogin()">Login</button>
+          <button class="btn" onclick="closeModal('loginPromptModal')">Not Now</button>
+        </div>
       </div>
     </div>
   </div>

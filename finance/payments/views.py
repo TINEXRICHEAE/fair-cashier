@@ -1,3 +1,5 @@
+from .models import Points, Users
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.contrib.auth import authenticate, login
 import logging
@@ -111,3 +113,66 @@ def logout_user(request):
         logout(request)  # Ends the user's session
         return JsonResponse({'message': 'Logout successful'}, status=200)
     return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+@login_required
+def points_view(request):
+    if request.method == 'GET':
+        # Fetch the points data for the logged-in user
+        try:
+            points = Points.objects.get(user_id=request.user.user_id)
+        except Points.DoesNotExist:
+            # Create a new Points record with an initial balance of 1000
+            points = Points.objects.create(
+                user_id=request.user.user_id,
+                points_balance=1000,
+                points_earned=0,
+                points_used=0
+            )
+
+        # Return the points data
+        return JsonResponse({
+            'user_id': points.user_id,
+            'points_balance': points.points_balance,
+            'points_earned': points.points_earned,
+            'points_used': points.points_used,
+            'created_at': points.created_at,
+            'updated_at': points.updated_at
+        })
+
+    elif request.method == 'POST':
+        # Update the points data for the logged-in user
+        try:
+            points = Points.objects.get(user_id=request.user.user_id)
+        except Points.DoesNotExist:
+            # Create a new Points record with an initial balance of 1000
+            points = Points.objects.create(
+                user_id=request.user.user_id,
+                points_balance=1000,
+                points_earned=0,
+                points_used=0
+            )
+
+        # Get the updated values from the request
+        points_earned = int(request.POST.get('points_earned', 0))
+        points_used = int(request.POST.get('points_used', 0))
+
+        # Update the points data
+        points.points_earned += points_earned
+        points.points_used += points_used
+        points.points_balance = 1000 + points.points_earned - points.points_used
+        points.save()
+
+        # Return the updated points data
+        return JsonResponse({
+            'user_id': points.user_id,
+            'points_balance': points.points_balance,
+            'points_earned': points.points_earned,
+            'points_used': points.points_used,
+            'created_at': points.created_at,
+            'updated_at': points.updated_at
+        })
+
+    else:
+        # Handle unsupported HTTP methods
+        return JsonResponse({'error': 'Method not allowed'}, status=405)

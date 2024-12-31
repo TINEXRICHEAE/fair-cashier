@@ -1,4 +1,3 @@
-
 function showLoginPrompt() {
   document.getElementById('loginPromptModal').style.display = 'block'; // Show the modal
 }
@@ -45,6 +44,46 @@ function checkAuthAndExecute(action) {
       console.error('Error checking authentication:', error);
     });
 }
+
+// Fetch Points Data from Backend
+function fetchPointsData() {
+  const csrftoken = getCookie('csrftoken');
+  fetch('/points', {
+    headers: {
+      'X-CSRFToken': csrftoken
+    }
+  })
+    .then(response => response.json())
+    .then(data => {
+      pointsBalance = data.points_balance;
+      updatePointsBalance();
+    })
+    .catch(error => {
+      console.error('Error fetching points data:', error);
+    });
+}
+
+// Update Points Data on Backend
+function updatePointsData(pointsEarned, pointsUsed) {
+  const csrftoken = getCookie('csrftoken');
+  fetch('/points', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'X-CSRFToken': csrftoken
+    },
+    body: `points_earned=${pointsEarned}&points_used=${pointsUsed}`
+  })
+    .then(response => response.json())
+    .then(data => {
+      pointsBalance = data.points_balance;
+      updatePointsBalance();
+    })
+    .catch(error => {
+      console.error('Error updating points data:', error);
+    });
+}
+
 // Initial State
 let pointsBalance = 1000;
 let totalTime = 0; // Total time in seconds
@@ -77,15 +116,12 @@ function updateStatusBar() {
 
 // Earn Points
 function earnPoints(type, amount) {
-  pointsBalance += amount;
-  updatePointsBalance();
+  updatePointsData(amount, 0);
 }
 
 // Use Points
 function usePoints(type, amount) {
-  pointsBalance -= amount;
-  if (pointsBalance < 0) pointsBalance = 0;
-  updatePointsBalance();
+  updatePointsData(0, amount);
 }
 
 // Format Time
@@ -116,7 +152,7 @@ function startTimeCounters() {
 }
 
 // Initialize
-updatePointsBalance();
+fetchPointsData(); // Fetch points data on page load
 startTimeCounters();
 
 function logoutUser() {

@@ -15,7 +15,7 @@
     {% if user.is_authenticated %}
       <button class="btn logout" onclick="logoutUser()">Logout</button>
     {% else %}
-      <a href="{% url 'login_user' %}" class="btn login">Login</a>
+      <a href="{% url 'login_user' %}" class="btn login">Login or Register</a>
     {% endif %}
   </div>
 </nav>
@@ -28,7 +28,7 @@
     <!-- Points Display -->
     <div class="points-display">
       <h2>Your Points</h2>
-      <p id="pointsBalance">1,000</p>
+      <p id="pointsBalance">Login to View</p>
     </div>
     <!-- Dashboard Link -->
       <a href="{% url 'dashboard' %}" class="nav-link">View Details</a> <!-- Use the same class for the link -->

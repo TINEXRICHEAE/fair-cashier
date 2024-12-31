@@ -240,3 +240,31 @@ body {
   justify-content: space-between; /* Space between buttons */
   margin-top: 20px; /* Space above buttons */
 }
+
+/* Add this to your CSS file */
+.card.points-summary {
+    background-color: #f9f9f9; /* Light background for the card */
+    border: 1px solid #ddd; /* Light border */
+    border-radius: 8px; /* Rounded corners */
+    padding: 20px; /* Padding inside the card */
+    margin-top: 20px; /* Space above the card */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+.card.points-summary h2 {
+    font-size: 1.5em; /* Larger font size for the heading */
+    margin-bottom: 10px; /* Space below the heading */
+    color: #333; /* Darker color for the heading */
+}
+
+.card.points-summary p {
+    font-size: 1.2em; /* Slightly larger font size for the paragraphs */
+    margin: 5px 0; /* Space above and below each paragraph */
+    color: #555; /* Medium gray color for the text */
+}
+
+.card.points-summary .value {
+    font-weight: bold; /* Bold text for the values */
+    color: #007bff; /* Blue color for the points values */
+}
+

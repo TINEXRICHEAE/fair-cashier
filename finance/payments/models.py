@@ -1,3 +1,5 @@
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+import random
 from django.contrib.auth.models import BaseUserManager
 from django.contrib.auth.models import AbstractBaseUser
 from django.db import models
@@ -47,15 +49,31 @@ class Transactions(models.Model):
         db_table = 'transactions'
 
     def __str__(self):
-        # {{ edit_10 }}
+
         return f"Transaction(id={self.transaction_id}, amount={self.amount}, status={self.status})"
 
 
 class UsersManager(BaseUserManager):
+    def generate_user_id(self):
+        """Generate a unique 16-digit user_id."""
+        while True:
+            user_id = random.randint(1000000000000000, 9999999999999999)
+            if not Users.objects.filter(user_id=user_id).exists():
+                return user_id
+
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError('The Email field must be set')
         email = self.normalize_email(email)
+
+        # Generate a unique user_id if not provided
+        if 'user_id' not in extra_fields:
+            extra_fields['user_id'] = self.generate_user_id()
+
+        # Set a default role if not provided
+        if 'role' not in extra_fields:
+            extra_fields['role'] = 'end_user'  # Default role for regular users
+
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -64,14 +82,25 @@ class UsersManager(BaseUserManager):
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
+
+        # Set the default role for superusers to 'superadmin'
+        if 'role' not in extra_fields:
+            extra_fields['role'] = 'superadmin'
+
         return self.create_user(email, password, **extra_fields)
 
 
-class Users(AbstractBaseUser):
+class Users(AbstractBaseUser, PermissionsMixin):
     user_id = models.BigIntegerField(primary_key=True)
     email = models.CharField(unique=True, max_length=50)
     password = models.CharField(max_length=128)
-    role = models.CharField(max_length=50)
+    ROLE_CHOICES = (
+        ('end_user', 'End User'),
+        ('admin', 'Admin'),
+        ('superadmin', 'Super Admin'),
+    )
+    role = models.CharField(
+        max_length=50, choices=ROLE_CHOICES)  # Add choices here
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

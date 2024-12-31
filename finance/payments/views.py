@@ -41,24 +41,12 @@ def register_user(request):
         if Users.objects.filter(email=email).exists():
             return JsonResponse({'error': 'Email already registered'}, status=400)
 
-        # Generate a unique 16-character user_id
-        def generate_user_id():
-            # Generate a 16-digit integer
-            return random.randint(1000000000000000, 9999999999999999)
-
-        user_id = generate_user_id()
-        while Users.objects.filter(user_id=user_id).exists():
-            user_id = generate_user_id()  # Regenerate if the user_id already exists
-
         # Create the user using UsersManager
         user = Users.objects.create_user(
-            user_id=user_id,
             email=email,
             password=password,  # Password will be hashed automatically
             role='end_user',  # Default role
-            is_active=True,  # Ensure the user is active
-            is_staff=False,  # Default to non-staff
-            is_superuser=False  # Default to non-superuser
+            is_staff=False,  # Default to non-staff  # Default to non-superuser
         )
 
         # Return success response

@@ -12,6 +12,11 @@
 <body>
   <!-- Add this logout button to your dashboard -->
 <nav class="navbar">
+  <div class="back-link-container">
+    <a href="{% url 'mainAppDemo' %}" class="nav-link back-link">
+      &#8592; Back To Main App
+    </a>
+  </div>
   <div class="nav-right">
     {% if user.is_authenticated %}
       <button class="btn logout" onclick="logoutUser()">Logout</button>
@@ -25,10 +30,10 @@
     <!-- Header -->
     <header class="header">
       
-      <a href="{% url 'mainAppDemo' %}" class="nav-link">Back To Main App</a>
+      
     
       <h1>Track your investment with Fair Cashier!</h1>
-      <p>Your transparent microfinance solution. Buy, Sell, and Share points with ease.</p>
+      <p>Your transparent Flexible and Two-way Payment System. <br> <strong><em>Buy, Sell, and Share points with ease.</em></strong></p>
     </header>
 
     <!-- Points Balance -->
@@ -48,9 +53,9 @@
       <h2>Quick Actions</h2>
       <div class="action-buttons">
         <button class="btn buy-points" onclick="openBuyPointsModal()">Buy Points</button>
-        <button class="btn convert-points" onclick="openConvertPointsModal()">Sell Points</button>
-        <button class="btn send-money" onclick="openSendMoneyModal()">Share Points</button>
-        <button class="btn profile" onclick="openProfileModal()">Update Profile</button>
+        <button class="btn sell-points" onclick="openSellPointsModal()">Sell Points</button>
+        <button class="btn share-points" onclick="openSharePointsModal()">Share Points</button>
+        <button class="btn profile" onclick="openProfileModal()">View Profile</button>
       </div>
     </section>
 
@@ -62,23 +67,13 @@
           <tr>
             <th>Date</th>
             <th>Type</th>
-            <th>Amount</th>
+            <th>Points</th>
+            <th>Direction</th>
             <th>Status</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>2023-10-01</td>
-            <td>Buy Points</td>
-            <td>+5,000</td>
-            <td>Completed</td>
-          </tr>
-          <tr>
-            <td>2023-10-02</td>
-            <td>Send Money</td>
-            <td>-2,000</td>
-            <td>Completed</td>
-          </tr>
+          
         </tbody>
       </table>
     </section>
@@ -88,59 +83,63 @@
       <div class="modal-content">
         <span class="close" onclick="closeModal('buyPointsModal')">&times;</span>
         <h2>Buy Points</h2>
-        <form onsubmit="checkAuthAndExecute(() => { /* Add your buy points logic here */ }); return false;">
-          <label for="amount">Amount</label>
-          <input type="number" id="amount" placeholder="Enter amount" required>
-          <label for="paymentMethod">Payment Method</label>
-          <select id="paymentMethod" required>
+        <form onsubmit="checkAuthAndExecute(() => { /* buy points logic here */ }); return false;">
+          <label for="pointsToBuy">Points to Buy</label>
+          <input type="number" id="pointsToBuy" placeholder="Enter points" required>
+          <label for="paymentChannelForBuy">PaymentChannel</label>
+          <select id="paymentChannelForBuy" class="paymentChannel" required onchange="updatePaymentDetailsPlaceholder(this, document.getElementById('paymentDetailsForBuy'))">
             <option value="MTN">MTN Mobile Money</option>
-            <option value="Airtel">Airtel Mobile Money</option>
-            <option value="Visa">Visa Credit Card</option>
+            <option value="Airtel">Airtel Money</option>
+            <option value="bank_transfer">Bank Transfer</option>
           </select>
+          <label for="paymentDetailsForBuy">Payment Details</label>
+          <input type="number" id="paymentDetailsForBuy" class="paymentDetails" placeholder="Enter Mobile, or Bank Account Number" required>
           <button type="submit" class="btn">Buy Now</button>
         </form>
       </div>
     </div>
 
-    <div id="convertPointsModal" class="modal">
+    <div id="sellPointsModal" class="modal">
       <div class="modal-content">
-        <span class="close" onclick="closeModal('convertPointsModal')">&times;</span>
-        <h2>Convert Points to Cash</h2>
-        <form onsubmit="checkAuthAndExecute(() => { /* Add your convert points logic here */ }); return false;">
-          <label for="points">Points to Convert</label>
-          <input type="number" id="points" placeholder="Enter points" required>
-          <label for="accountDetails">Account Details</label>
-          <input type="text" id="accountDetails" placeholder="Mobile number or bank account" required>
-          <button type="submit" class="btn">Convert Now</button>
+        <span class="close" onclick="closeModal('sellPointsModal')">&times;</span>
+        <h2>Sell Points</h2>
+        <form onsubmit="checkAuthAndExecute(() => { /* share points logic here */ }); return false;">
+          <label for="pointsToSell">Points to Sell</label>
+          <input type="number" id="pointsToSell" placeholder="Enter points" required>
+          <label for="paymentChannelForSell">PaymentChannel</label>
+          <select id="paymentChannelForSell" class="paymentChannel" required onchange="updatePaymentDetailsPlaceholder(this, document.getElementById('paymentDetailsForSell'))">
+            <option value="MTN">MTN Mobile Money</option>
+            <option value="Airtel">Airtel Money</option>
+            <option value="bank_transfer">Bank Transfer</option>
+          </select>
+          <label for="paymentDetailsForSell">Payment Details</label>
+          <input type="number" id="paymentDetailsForSell" class="paymentDetails" placeholder="Enter Mobile, or Bank Account Number" required>
+          <button type="submit" class="btn">Sell Now</button>
         </form>
       </div>
     </div>
 
-    <div id="sendMoneyModal" class="modal">
+    <div id="sharePointsModal" class="modal">
       <div class="modal-content">
         <span class="close" onclick="closeModal('sendMoneyModal')">&times;</span>
-        <h2>Send Money</h2>
-        <form onsubmit="checkAuthAndExecute(() => { /* Add your send money logic here */ }); return false;">
-          <label for="recipient">Recipient's Account</label>
-          <input type="text" id="recipient" placeholder="Enter recipient's mobile or account number" required>
-          <label for="sendAmount">Amount</label>
-          <input type="number" id="sendAmount" placeholder="Enter amount" required>
-          <button type="submit" class="btn">Send Now</button>
+        <h2>Share Points</h2>
+        <form onsubmit="checkAuthAndExecute(() => { /* Add your share points logic here */ }); return false;">
+          <label for="receiverEmail">Recipient's Email</label>
+          <input type="email" id="receiverEmail" placeholder="Enter Recipient's Email" required>
+          <label for="pointsToShare">Points To Share</label>
+          <input type="number" id="pointsToShare" placeholder="Enter Points to Share" required>
+          <button type="submit" class="btn">Share Now</button>
         </form>
       </div>
     </div>
 
+    
     <div id="profileModal" class="modal">
       <div class="modal-content">
         <span class="close" onclick="closeModal('profileModal')">&times;</span>
-        <h2>Update Profile</h2>
-        <form onsubmit="checkAuthAndExecute(() => { /* Add your update profile logic here */ }); return false;">
-          <label for="phone">Phone Number</label>
-          <input type="text" id="phone" placeholder="Enter new phone number" required>
-          <label for="bankAccount">Bank Account</label>
-          <input type="text" id="bankAccount" placeholder="Enter new bank account" required>
-          <button type="submit" class="btn">Update</button>
-        </form>
+        <h2>Your Profile</h2>
+        <p>Email: <span id="email">Your Email Appears Here</span></p>
+        <button class="btn delete-account" onclick="deleteAccount()">Delete Account</button>
       </div>
     </div>
 
@@ -149,15 +148,18 @@
       <div class="modal-content">
         <span class="close" onclick="closeModal('loginPromptModal')">&times;</span>
         <h2>Authentication Required</h2>
-        <p>You need to log in to perform this action.</p>
+        <p>You need to log in to continue.</p>
         <div class="modal-buttons">
-          <button class="btn login" onclick="redirectToLogin()">Login</button>
           <button class="btn" onclick="closeModal('loginPromptModal')">Not Now</button>
+          <button class="btn login" onclick="redirectToLogin()">Login</button>
         </div>
       </div>
     </div>
   </div>
 
   <script src="{% static 'js/dashboard.js' %}"></script>
+  <script>
+    
+  </script>
 </body>
 </html>

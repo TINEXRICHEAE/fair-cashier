@@ -38,7 +38,7 @@ class Transactions(models.Model):
     sender_id = models.CharField(max_length=16)
     receiver_id = models.CharField(max_length=16)
     transaction_type = models.CharField(max_length=50)
-    amount = models.IntegerField()
+    points = models.IntegerField()
     payment_channel = models.CharField(max_length=50)
     status = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -50,7 +50,7 @@ class Transactions(models.Model):
 
     def __str__(self):
 
-        return f"Transaction(id={self.transaction_id}, amount={self.amount}, status={self.status})"
+        return f"Transaction(id={self.transaction_id}, points={self.points}, status={self.status})"
 
 
 class UsersManager(BaseUserManager):

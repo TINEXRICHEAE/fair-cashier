@@ -79,12 +79,12 @@ body {
     color: #fff;
   }
   
-  .btn.convert-points {
+  .btn.sell-points {
     background: #e67e22;
     color: #fff;
   }
   
-  .btn.send-money {
+  .btn.share-points {
     background: #9b59b6;
     color: #fff;
   }
@@ -166,31 +166,45 @@ body {
     width: 100%;
   }
  
-  /* Add this CSS to your stylesheet */
+  /* Add this to your CSS file */
+.back-link-container {
+  margin-right: auto;
+  
+}
+
+.back-link {
+  text-decoration: none; /* Remove underline */
+  color: #007bff;       /* Change color to your desired link color */
+  font-size: 16px;      /* Adjust font size */
+  }
+
+.back-link::before {
+  content: '';          /* Create a pseudo-element for the arrow */
+  border: solid transparent; /* Create a transparent border */
+  border-width: 5px 10px 5px 0; /* Adjust arrow size */
+  border-right-color: #007bff; /* Arrow color */
+  margin-right: 5px;   /* Space between arrow and text */
+}
+
+/* Add this CSS to your stylesheet */
 .navbar {
   background-color: #333; /* Dark background */
   padding: 10px 20px; /* Padding around the navbar */
-  display: flex; /* Use flexbox for layout */
-  justify-content: flex-end; /* Align items to the right */
-  position: relative; /* Positioning context for absolute elements */
-  a {text-decoration: none;}
-}
-
-.nav-right {
   display: flex; /* Flexbox for right section */
-  align-items: center; /* Center items vertically */
-}
+  align-items: center;
+  justify-content: space-between; /* Distribute items evenly from left to right */
+  a {text-decoration: none;}
+  }
+
 
 .btn {
   background-color: #4CAF50; /* Green background */
   color: white; /* White text */
   border: none; /* No border */
   padding: 10px 15px; /* Padding for buttons */
-  margin-left: 10px; /* Space between buttons */
   cursor: pointer; /* Pointer cursor on hover */
   border-radius: 5px; /* Rounded corners */
   transition: background-color 0.3s; /* Smooth transition */
-  
 }
 
 .btn:hover {

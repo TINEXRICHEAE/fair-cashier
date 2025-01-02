@@ -1,105 +1,128 @@
 import requests
 
+from django.contrib.auth import authenticate
+from django.utils import timezone
+from django.http import JsonResponse
+import json
 
-def process_payment(amount, payment_details, payment_channel, transaction_type):
-    """
-    Process payment using the specified payment channel.
 
-    Args:
-        amount (float): The amount to be paid.
-        payment_details (str): The phone number or card details for the payment.
-        payment_channel (str): The payment channel ('MTN', 'Airtel', or 'Visa').
-        transaction_type (str): The transaction type ('send' or 'receive').
+def process_payment(amount, payment_details, payment_channel, transaction_type, request):
+    try:
+        # Parse the request body for re-authentication
+        data = json.loads(request.body)
+        email = data.get('email')
+        password = data.get('password')
 
-    Returns:
-        bool: True if the payment is successful, False otherwise.
-    """
-    if payment_channel == 'MTN':
-        return process_mtn_mobile_money_payment(amount, payment_details, transaction_type)
-    elif payment_channel == 'Airtel':
-        return process_airtel_mobile_money_payment(amount, payment_details, transaction_type)
-    elif payment_channel == 'Visa':
-        return process_visa_payment(amount, payment_details, transaction_type)
-    else:
-        raise ValueError(f"Unsupported payment channel: {payment_channel}")
+        # Authenticate the user
+        user = authenticate(username=email, password=password)
+        if not user:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid email or password.'
+            }, status=400)
+
+        # Process payment based on the payment channel
+        if payment_channel == 'MTN':
+            return process_mtn_mobile_money_payment(amount, payment_details, transaction_type)
+        elif payment_channel == 'Airtel':
+            return process_airtel_mobile_money_payment(amount, payment_details, transaction_type)
+        elif payment_channel == 'bank_transfer':
+            return process_bank_transfer_payment(amount, payment_details, transaction_type)
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Unsupported payment channel: {payment_channel}'
+            }, status=400)
+
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)
 
 
 def process_mtn_mobile_money_payment(amount, phone_number, transaction_type):
-    """
-    Process payment using MTN Mobile Money API.
-
-    Args:
-        amount (float): The amount to be paid.
-        phone_number (str): The phone number for the payment.
-        transaction_type (str): The transaction type ('send' or 'receive').
-
-    Returns:
-        bool: True if the payment is successful, False otherwise.
-    """
-    url = 'https://api.mtn.com/v1/payments'
-    headers = {
-        'Authorization': 'Bearer YOUR_MTN_API_KEY',
-        'Content-Type': 'application/json'
-    }
-    payload = {
-        'amount': amount,
-        'phone_number': phone_number,
-        'currency': 'USD',
-        'transaction_type': transaction_type  # Explicitly define the payment direction
-    }
-    response = requests.post(url, json=payload, headers=headers)
-    return response.status_code == 200
+    timestamp = timezone.now().strftime('%Y-%m-%d %H:%M:%S')
+    if transaction_type == 'sell_points':
+        message = {
+            'status': 'success',
+            'message': 'MTN Mobile Money Payment Successful',
+            'details': {
+                'Transaction': 'Sell Points',
+                'Payment': f'${amount:.2f} (UGX {amount * 3500:.2f})',
+                'To': phone_number,
+                'From': 'ADMIN123',
+                'Time': timestamp
+            }
+        }
+    else:
+        message = {
+            'status': 'success',
+            'message': 'MTN Mobile Money Payment Successful',
+            'details': {
+                'Transaction': 'Buy Points',
+                'Payment': f'${amount:.2f} (UGX {amount * 3500:.2f})',
+                'From': phone_number,
+                'To': 'ADMIN123',
+                'Time': timestamp
+            }
+        }
+    return JsonResponse(message)
 
 
 def process_airtel_mobile_money_payment(amount, phone_number, transaction_type):
-    """
-    Process payment using Airtel Mobile Money API.
+    timestamp = timezone.now().strftime('%Y-%m-%d %H:%M:%S')
+    if transaction_type == 'sell_points':
+        message = {
+            'status': 'success',
+            'message': 'Airtel Mobile Money Payment Successful',
+            'details': {
+                'Transaction': 'Sell Points',
+                'Payment': f'${amount:.2f} (UGX {amount * 3500:.2f})',
+                'To': phone_number,
+                'From': 'ADMIN123',
+                'Time': timestamp
+            }
+        }
+    else:
+        message = {
+            'status': 'success',
+            'message': 'Airtel Mobile Money Payment Successful',
+            'details': {
+                'Transaction': 'Buy Points',
+                'Payment': f'${amount:.2f} (UGX {amount * 3500:.2f})',
+                'From': phone_number,
+                'To': 'ADMIN123',
+                'Time': timestamp
+            }
+        }
+    return JsonResponse(message)
 
-    Args:
-        amount (float): The amount to be paid.
-        phone_number (str): The phone number for the payment.
-        transaction_type (str): The transaction type ('send' or 'receive').
 
-    Returns:
-        bool: True if the payment is successful, False otherwise.
-    """
-    url = 'https://api.airtel.com/v1/payments'
-    headers = {
-        'Authorization': 'Bearer YOUR_AIRTEL_API_KEY',
-        'Content-Type': 'application/json'
-    }
-    payload = {
-        'amount': amount,
-        'phone_number': phone_number,
-        'currency': 'USD',
-        'transaction_type': transaction_type  # Explicitly define the payment direction
-    }
-    response = requests.post(url, json=payload, headers=headers)
-    return response.status_code == 200
-
-
-def process_visa_payment(amount, card_details, transaction_type):
-    """
-    Process payment using Visa API.
-
-    Args:
-        amount (float): The amount to be paid.
-        card_details (str): The card details for the payment.
-        transaction_type (str): The transaction type ('send' or 'receive').
-
-    Returns:
-        bool: True if the payment is successful, False otherwise.
-    """
-    url = 'https://api.visa.com/v1/payments'
-    headers = {
-        'Authorization': 'Bearer YOUR_VISA_API_KEY',
-        'Content-Type': 'application/json'
-    }
-    payload = {
-        'amount': amount,
-        'card_details': card_details,
-        'currency': 'USD',
-        'transaction_type': transaction_type  # Explicitly define the payment direction
-    }
-    response = requests.post(url, json=payload, headers=headers)
-    return response.status_code == 200
+def process_bank_transfer_payment(amount, account_number, transaction_type):
+    timestamp = timezone.now().strftime('%Y-%m-%d %H:%M:%S')
+    if transaction_type == 'sell_points':
+        message = {
+            'status': 'success',
+            'message': 'Bank Transfer Successful',
+            'details': {
+                'Transaction': 'Sell Points',
+                'Payment': f'${amount:.2f} (UGX {amount * 3500:.2f})',
+                'To': account_number,
+                'From': 'ADMIN123',
+                'Time': timestamp
+            }
+        }
+    else:
+        message = {
+            'status': 'success',
+            'message': 'Bank Transfer Successful',
+            'details': {
+                'Transaction': 'Buy Points',
+                'Payment': f'${amount:.2f} (UGX {amount * 3500:.2f})',
+                'From': account_number,
+                'To': 'ADMIN123',
+                'Time': timestamp
+            }
+        }
+    return JsonResponse(message)

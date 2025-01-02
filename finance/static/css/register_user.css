@@ -119,3 +119,18 @@ body {
     background: #f8d7da;
     color: #e74c3c;
   }
+
+  /* Login Link */
+  .login-link {
+    margin-top: 20px;
+    font-size: 0.9rem;
+  }
+  
+  .login-link a {
+    color: #3498db;
+    text-decoration: none;
+  }
+  
+  .login-link a:hover {
+    text-decoration: underline;
+  }

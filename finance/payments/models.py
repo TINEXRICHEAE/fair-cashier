@@ -1,56 +1,44 @@
+from django.utils import timezone
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 import random
 from django.contrib.auth.models import BaseUserManager
 from django.contrib.auth.models import AbstractBaseUser
 from django.db import models
 
-# Create your models here.
-# This is an auto-generated Django model module.
-# You'll have to do the following manually to clean this up:
-#   * Rearrange models' order
-#   * Make sure each model has one field with primary_key=True
-#   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
-#   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
-# Feel free to rename the models, but don't rename db_table values or field names.
-from django.db import models
+
+from django.contrib.auth.models import Group as DjangoGroup
 
 
-class Points(models.Model):
-    points_id = models.AutoField(primary_key=True)
-    user_id = models.CharField(max_length=16)
-    points_balance = models.IntegerField(blank=True, null=True)
-    points_earned = models.IntegerField(blank=True, null=True)
-    points_used = models.IntegerField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)  # {{ edit_1 }}
-    updated_at = models.DateTimeField(auto_now=True)  # {{ edit_2 }}
-
-    class Meta:
-        managed = True  # {{ edit_3 }}
-        db_table = 'points'
-
-    def __str__(self):  # {{ edit_4 }}
-        # {{ edit_5 }
-        return f"Points(user_id={self.user_id}, balance={self.points_balance})"
-
-
-class Transactions(models.Model):
-    transaction_id = models.AutoField(primary_key=True)
-    sender_id = models.CharField(max_length=16)
-    receiver_id = models.CharField(max_length=16)
-    transaction_type = models.CharField(max_length=50)
-    points = models.IntegerField()
-    payment_channel = models.CharField(max_length=50)
-    status = models.CharField(max_length=50)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+class Group(DjangoGroup):  # Inherit from Django's built-in Group model
+    group_id = models.AutoField(primary_key=True)
+    admin = models.ForeignKey(
+        'Users',
+        on_delete=models.CASCADE,
+        related_name='managed_group',
+        limit_choices_to={'role': 'admin'},
+        null=True,
+        blank=True
+    )
+    superadmin = models.ForeignKey(
+        'Users',
+        on_delete=models.CASCADE,
+        related_name='supervised_groups',
+        limit_choices_to={'role': 'superadmin'},
+        null=True,
+        blank=True
+    )
 
     class Meta:
-        managed = True
-        db_table = 'transactions'
+        db_table = 'groups'
 
     def __str__(self):
-
-        return f"Transaction(id={self.transaction_id}, points={self.points}, status={self.status})"
+        if self.admin:
+            return f"Group(name={self.name}, admin={self.admin.email})"
+        elif self.superadmin:
+            return f"Group(name={self.name}, superadmin={self.superadmin.email})"
+        else:
+            return f"Group(name={self.name})"
 
 
 class UsersManager(BaseUserManager):
@@ -74,9 +62,47 @@ class UsersManager(BaseUserManager):
         if 'role' not in extra_fields:
             extra_fields['role'] = 'end_user'  # Default role for regular users
 
+        # Set is_staff and is_superuser based on the role
+        if extra_fields['role'] == 'admin':
+            extra_fields['is_staff'] = True
+            extra_fields['is_superuser'] = False
+        elif extra_fields['role'] == 'superadmin':
+            extra_fields['is_staff'] = True
+            extra_fields['is_superuser'] = True
+        else:
+            extra_fields['is_staff'] = False
+            extra_fields['is_superuser'] = False
+
+        # Set is_active to True by default
+        extra_fields['is_active'] = True
+
+        # Create the user
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
+
+        # Assign the user to the appropriate group
+        if user.role == 'admin':
+            # Assign to the 'Admins' group with the superadmin as the admin
+            superadmin = Users.objects.filter(role='superadmin').first()
+            if superadmin:
+                group, created = Group.objects.get_or_create(
+                    name='Admins',
+                    superadmin=superadmin
+                )
+                user.group = group
+                user.save()
+        elif user.role == 'end_user':
+            # Assign to the 'End-users' group with the superadmin as the admin
+            superadmin = Users.objects.filter(role='superadmin').first()
+            if superadmin:
+                group, created = Group.objects.get_or_create(
+                    name='End-users',
+                    superadmin=superadmin
+                )
+                user.group = group
+                user.save()
+
         return user
 
     def create_superuser(self, email, password=None, **extra_fields):
@@ -99,12 +125,13 @@ class Users(AbstractBaseUser, PermissionsMixin):
         ('admin', 'Admin'),
         ('superadmin', 'Super Admin'),
     )
-    role = models.CharField(
-        max_length=50, choices=ROLE_CHOICES)  # Add choices here
+    role = models.CharField(max_length=50, choices=ROLE_CHOICES)
+    admin_email = models.EmailField(
+        max_length=50, blank=True, null=True)  # New field for end_user
+    group = models.ForeignKey(
+        'Group', on_delete=models.SET_NULL, null=True, blank=True, related_name='members')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    # Add these fields for Django's admin and authentication
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
@@ -115,7 +142,6 @@ class Users(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = []  # Add any other required fields here
 
     class Meta:
-        managed = True
         db_table = 'users'
 
     def __str__(self):
@@ -127,3 +153,66 @@ class Users(AbstractBaseUser, PermissionsMixin):
 
     def has_module_perms(self, app_label):
         return self.is_superuser
+
+
+class Points(models.Model):
+    points_id = models.AutoField(primary_key=True)
+    user_id = models.ForeignKey('Users', on_delete=models.CASCADE)
+    points_balance = models.IntegerField(blank=True, null=True)
+    points_earned = models.IntegerField(blank=True, null=True)
+    points_used = models.IntegerField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        managed = True
+        db_table = 'points'
+
+    def __str__(self):
+
+        return f"Points(user_id={self.user_id}, balance={self.points_balance})"
+
+
+class Transactions(models.Model):
+    # Transaction type choices
+    TRANSACTION_TYPE_CHOICES = [
+        ('Buy Points', 'Buy Points'),
+        ('Sell Points', 'Sell Points'),
+        ('Share Points', 'Share Points'),
+    ]
+
+    # Payment channel choices
+    PAYMENT_CHANNEL_CHOICES = [
+        ('MTN', 'MTN'),
+        ('Airtel', 'Airtel'),
+        ('Bank', 'Bank'),
+        ('Internal', 'Internal'),
+    ]
+
+    # Status choices
+    STATUS_CHOICES = [
+        ('Completed', 'Completed'),
+        ('Processing', 'Processing'),
+        ('Failed', 'Failed'),
+    ]
+
+    transaction_id = models.AutoField(primary_key=True)
+    sender = models.ForeignKey(
+        'Users', on_delete=models.CASCADE, related_name='sending_transactions')
+    receiver = models.ForeignKey(
+        'Users', on_delete=models.CASCADE, related_name='receiving_transactions')
+    transaction_type = models.CharField(
+        max_length=50, choices=TRANSACTION_TYPE_CHOICES)
+    points = models.IntegerField()
+    payment_channel = models.CharField(
+        max_length=50, choices=PAYMENT_CHANNEL_CHOICES)
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        managed = True
+        db_table = 'transactions'
+
+    def __str__(self):
+        return f"Transaction(id={self.transaction_id}, points={self.points}, status={self.status})"

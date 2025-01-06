@@ -110,7 +110,7 @@
           <select id="paymentChannelForSell" class="paymentChannel" required onchange="updatePaymentDetailsPlaceholder(this, document.getElementById('paymentDetailsForSell'))">
             <option value="MTN">MTN Mobile Money</option>
             <option value="Airtel">Airtel Money</option>
-            <option value="bank_transfer">Bank Transfer</option>
+            <option value="Bank">Bank Transfer</option>
           </select>
           <label for="paymentDetailsForSell">Payment Details</label>
           <input type="number" id="paymentDetailsForSell" class="paymentDetails" placeholder="Enter Mobile, or Bank Account Number" required>
@@ -135,14 +135,28 @@
 
     
     <div id="profileModal" class="modal">
-      <div class="modal-content">
-        <span class="close" onclick="closeModal('profileModal')">&times;</span>
-        <h2>Your Profile</h2>
-        <p>Email: <span id="email">Your Email Appears Here</span></p>
-        <button class="btn delete-account" onclick="deleteAccount()">Delete Account</button>
-      </div>
+  <div class="modal-content">
+    <span class="close" onclick="closeModal('profileModal')">&times;</span>
+    <h2>Your Profile</h2>
+    <!-- User Email (Non-editable) -->
+    <p>Your Email: <span id="email">{% if user.email %}{{ user.email }}{% else %}Your Email Appears Here{% endif %}</span></p>
+    <!-- Admin Email Section -->
+    <div id="adminEmailSection">
+      <p>Admin Email: 
+        <span id="adminEmailDisplay">{% if user.admin_email %}{{ user.admin_email }}{% else %}Your Admin Email Appears Here{% endif %}</span>
+        <input 
+          type="email" 
+          id="adminEmail" 
+          placeholder="Enter Admin Email"
+          style="display: none;" 
+        >
+      </p>
+      <button class="btn" id="toggleAdminEmailBtn" onclick="toggleAdminEmail()">Add Admin Email</button>
+      <button class="btn" onclick="updateAdminEmail()" style="display: none;" id="updateAdminEmailBtn">Update Admin Email</button>
     </div>
-
+    <button class="btn delete-account" onclick="deleteAccount()">Delete Account</button>
+  </div>
+</div>
     <!-- Login Prompt Modal -->
     <div id="loginPromptModal" class="loginPromptModal" style="display: none;">
       <div class="modal-content">
@@ -158,8 +172,5 @@
   </div>
 
   <script src="{% static 'js/dashboard.js' %}"></script>
-  <script>
-    
-  </script>
 </body>
 </html>

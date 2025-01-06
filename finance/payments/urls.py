@@ -15,7 +15,7 @@ urlpatterns = [
     path('share-points', views.share_points, name='share_points'),
     path('transaction-history', views.transaction_history,
          name='transaction_history'),
-    path('get-user-email', views.get_user_email, name='get_user_email'),
+    path('user-profile', views.user_profile, name='user_profile'),
     path('delete-account', views.delete_account, name='delete_account'),
 
 

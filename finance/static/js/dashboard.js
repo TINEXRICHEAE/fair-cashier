@@ -110,6 +110,7 @@ async function processPayment(url, data) {
   const result = await response.json();
   if (result.status === 'success') {
       alert(`${result.message}\nDetails: ${JSON.stringify(result.details, null, 2)}`);
+      window.location.href = '/dashboard';
   } else {
       alert(`Error: ${result.message}`);
   }
@@ -219,11 +220,9 @@ function handleSharePoints(event) {
   processPayment('/share-points', data);
 }
 
-
 // Attach event listeners to the forms
 document.getElementById('buyPointsModal').querySelector('form').addEventListener('submit', handleBuyPoints);
 document.getElementById('sellPointsModal').querySelector('form').addEventListener('submit', handleSellPoints);
-// Attach event listener to the Share Points form
 document.getElementById('sharePointsModal').querySelector('form').addEventListener('submit', handleSharePoints);
 
 // Buy Points Modal
@@ -231,22 +230,141 @@ function openBuyPointsModal() {
   document.getElementById('buyPointsModal').style.display = 'flex';
 }
 
-
-
 // Sell Points Modal
 function openSellPointsModal() {
   document.getElementById('sellPointsModal').style.display = 'flex';
 }
-
 
 // Share Points Modal
 function openSharePointsModal() {
   document.getElementById('sharePointsModal').style.display = 'flex';
 }
 
-// Profie Modal
+// Profile Modal
+
+// Function to fetch and display the user's profile data
+function fetchUserProfile() {
+  const csrftoken = getCookie('csrftoken');
+  fetch('/user-profile', {
+    headers: {
+      'X-CSRFToken': csrftoken
+    }
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.status === 'success') {
+        // Display the user's email
+        document.getElementById('email').textContent = data.email;
+
+        // Display the admin email (if available)
+        const adminEmailDisplay = document.getElementById('adminEmailDisplay');
+        const adminEmailInput = document.getElementById('adminEmail');
+        if (data.admin_email) {
+          adminEmailDisplay.textContent = data.admin_email;
+          adminEmailInput.value = data.admin_email;
+        } else {
+          adminEmailDisplay.textContent = 'Your Admin Email Appears Here';
+          adminEmailInput.value = '';
+        }
+      } else {
+        console.error('Error fetching user profile:', data.message);
+      }
+    })
+    .catch(error => {
+      console.error('Error fetching user profile:', error);
+    });
+}
+
+// Function to toggle the admin email input field
+function toggleAdminEmail() {
+  const adminEmailInput = document.getElementById('adminEmail');
+  const adminEmailDisplay = document.getElementById('adminEmailDisplay');
+  const toggleButton = document.getElementById('toggleAdminEmailBtn');
+  const updateButton = document.getElementById('updateAdminEmailBtn');
+
+  if (adminEmailInput.style.display === 'none') {
+    adminEmailInput.style.display = 'block';
+    adminEmailDisplay.style.display = 'none';
+    toggleButton.style.display = 'none';
+    updateButton.style.display = 'inline-block';
+  } else {
+    adminEmailInput.style.display = 'none';
+    adminEmailDisplay.style.display = 'inline';
+    toggleButton.style.display = 'inline-block';
+    updateButton.style.display = 'none';
+  }
+}
+
+// Function to update the admin email
+function updateAdminEmail() {
+  const adminEmail = document.getElementById('adminEmail').value;
+  if (!adminEmail) {
+    alert('Please enter a valid admin email.');
+    return;
+  }
+
+  const csrftoken = getCookie('csrftoken');
+  fetch('/user-profile', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrftoken,
+    },
+    body: JSON.stringify({ admin_email: adminEmail }),
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'success') {
+        alert('Admin email updated successfully.');
+        fetchUserProfile(); // Refresh the profile data
+        toggleAdminEmail(); // Hide the input field and show the display text
+      } else {
+        alert('Error: ' + data.message);
+      }
+    })
+    .catch(error => {
+      console.error('Error updating admin email:', error);
+    });
+}
+
+// Function to delete the user's account
+function deleteAccount() {
+  const confirmation = confirm('Are you sure you want to delete your account? This action cannot be undone.');
+  if (!confirmation) {
+      return; // Stop if the user cancels
+  }
+
+  const csrftoken = getCookie('csrftoken');
+  fetch('/delete-account', {
+      method: 'POST',
+      headers: {
+          'X-CSRFToken': csrftoken,
+          'Content-Type': 'application/json'
+      }
+  })
+      .then(response => response.json())
+      .then(data => {
+          if (data.status === 'success') {
+              alert(data.message);
+              window.location.href = ''; // Redirect to the home page
+          } else {
+              alert('Error: ' + data.message);
+          }
+      })
+      .catch(error => {
+          console.error('Error deleting account:', error);
+      });
+}
+
+
 function openProfileModal() {
   document.getElementById('profileModal').style.display = 'flex';
+  fetchUserProfile(); // Fetch and display the user's profile data
 }
 
 // Close Modals
@@ -299,7 +417,7 @@ function fetchTransactionHistory() {
 // Fetch transaction history on page load
 fetchTransactionHistory();
 
-
+// Logout User
 function logoutUser() {
   fetch('/logout_user', {
     method: 'POST',
@@ -321,64 +439,3 @@ function logoutUser() {
     });
 }
 
-
-// Function to fetch and display the user's email
-function fetchUserEmail() {
-  const csrftoken = getCookie('csrftoken');
-  fetch('/get-user-email', {  // Ensure the trailing slash is included
-      headers: {
-          'X-CSRFToken': csrftoken
-      }
-  })
-      .then(response => {
-          if (!response.ok) {
-              throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          return response.json();
-      })
-      .then(data => {
-          if (data.status === 'success') {
-              document.getElementById('email').textContent = data.email;
-          } else {
-              console.error('Error fetching user email:', data.message);
-          }
-      })
-      .catch(error => {
-          console.error('Error fetching user email:', error);
-      });
-}
-
-// Function to delete the user's account
-function deleteAccount() {
-  const confirmation = confirm('Are you sure you want to delete your account? This action cannot be undone.');
-  if (!confirmation) {
-      return; // Stop if the user cancels
-  }
-
-  const csrftoken = getCookie('csrftoken');
-  fetch('/delete-account', {
-      method: 'POST',
-      headers: {
-          'X-CSRFToken': csrftoken,
-          'Content-Type': 'application/json'
-      }
-  })
-      .then(response => response.json())
-      .then(data => {
-          if (data.status === 'success') {
-              alert(data.message);
-              window.location.href = ''; // Redirect to the home page
-          } else {
-              alert('Error: ' + data.message);
-          }
-      })
-      .catch(error => {
-          console.error('Error deleting account:', error);
-      });
-}
-
-// Fetch user email when the profile modal is opened
-function openProfileModal() {
-  document.getElementById('profileModal').style.display = 'flex';
-  fetchUserEmail(); // Fetch and display the user's email
-}

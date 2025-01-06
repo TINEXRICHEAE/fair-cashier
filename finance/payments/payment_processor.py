@@ -1,33 +1,27 @@
-import requests
-
-from django.contrib.auth import authenticate
 from django.utils import timezone
 from django.http import JsonResponse
-import json
+from .models import Users
 
 
 def process_payment(amount, payment_details, payment_channel, transaction_type, request):
     try:
-        # Parse the request body for re-authentication
-        data = json.loads(request.body)
-        email = data.get('email')
-        password = data.get('password')
-
-        # Authenticate the user
-        user = authenticate(username=email, password=password)
-        if not user:
+        # Determine the admin reference (superadmin for all roles)
+        superadmin = Users.objects.filter(role='superadmin').first()
+        if not superadmin:
             return JsonResponse({
                 'status': 'error',
-                'message': 'Invalid email or password.'
+                'message': 'Superadmin not found.'
             }, status=400)
+
+        admin_reference = superadmin.email
 
         # Process payment based on the payment channel
         if payment_channel == 'MTN':
-            return process_mtn_mobile_money_payment(amount, payment_details, transaction_type)
+            return process_mtn_mobile_money_payment(amount, payment_details, transaction_type, admin_reference)
         elif payment_channel == 'Airtel':
-            return process_airtel_mobile_money_payment(amount, payment_details, transaction_type)
-        elif payment_channel == 'bank_transfer':
-            return process_bank_transfer_payment(amount, payment_details, transaction_type)
+            return process_airtel_mobile_money_payment(amount, payment_details, transaction_type, admin_reference)
+        elif payment_channel == 'Bank':
+            return process_bank_transfer_payment(amount, payment_details, transaction_type, admin_reference)
         else:
             return JsonResponse({
                 'status': 'error',
@@ -41,9 +35,9 @@ def process_payment(amount, payment_details, payment_channel, transaction_type, 
         }, status=500)
 
 
-def process_mtn_mobile_money_payment(amount, phone_number, transaction_type):
+def process_mtn_mobile_money_payment(amount, phone_number, transaction_type, admin_reference):
     timestamp = timezone.now().strftime('%Y-%m-%d %H:%M:%S')
-    if transaction_type == 'sell_points':
+    if transaction_type == 'Sell Points':
         message = {
             'status': 'success',
             'message': 'MTN Mobile Money Payment Successful',
@@ -51,7 +45,7 @@ def process_mtn_mobile_money_payment(amount, phone_number, transaction_type):
                 'Transaction': 'Sell Points',
                 'Payment': f'${amount:.2f} (UGX {amount * 3500:.2f})',
                 'To': phone_number,
-                'From': 'ADMIN123',
+                'From': admin_reference,
                 'Time': timestamp
             }
         }
@@ -63,16 +57,16 @@ def process_mtn_mobile_money_payment(amount, phone_number, transaction_type):
                 'Transaction': 'Buy Points',
                 'Payment': f'${amount:.2f} (UGX {amount * 3500:.2f})',
                 'From': phone_number,
-                'To': 'ADMIN123',
+                'To': admin_reference,
                 'Time': timestamp
             }
         }
     return JsonResponse(message)
 
 
-def process_airtel_mobile_money_payment(amount, phone_number, transaction_type):
+def process_airtel_mobile_money_payment(amount, phone_number, transaction_type, admin_reference):
     timestamp = timezone.now().strftime('%Y-%m-%d %H:%M:%S')
-    if transaction_type == 'sell_points':
+    if transaction_type == 'Sell Points':
         message = {
             'status': 'success',
             'message': 'Airtel Mobile Money Payment Successful',
@@ -80,7 +74,7 @@ def process_airtel_mobile_money_payment(amount, phone_number, transaction_type):
                 'Transaction': 'Sell Points',
                 'Payment': f'${amount:.2f} (UGX {amount * 3500:.2f})',
                 'To': phone_number,
-                'From': 'ADMIN123',
+                'From': admin_reference,
                 'Time': timestamp
             }
         }
@@ -92,16 +86,16 @@ def process_airtel_mobile_money_payment(amount, phone_number, transaction_type):
                 'Transaction': 'Buy Points',
                 'Payment': f'${amount:.2f} (UGX {amount * 3500:.2f})',
                 'From': phone_number,
-                'To': 'ADMIN123',
+                'To': admin_reference,
                 'Time': timestamp
             }
         }
     return JsonResponse(message)
 
 
-def process_bank_transfer_payment(amount, account_number, transaction_type):
+def process_bank_transfer_payment(amount, account_number, transaction_type, admin_reference):
     timestamp = timezone.now().strftime('%Y-%m-%d %H:%M:%S')
-    if transaction_type == 'sell_points':
+    if transaction_type == 'Sell Points':
         message = {
             'status': 'success',
             'message': 'Bank Transfer Successful',
@@ -109,7 +103,7 @@ def process_bank_transfer_payment(amount, account_number, transaction_type):
                 'Transaction': 'Sell Points',
                 'Payment': f'${amount:.2f} (UGX {amount * 3500:.2f})',
                 'To': account_number,
-                'From': 'ADMIN123',
+                'From': admin_reference,
                 'Time': timestamp
             }
         }
@@ -121,7 +115,7 @@ def process_bank_transfer_payment(amount, account_number, transaction_type):
                 'Transaction': 'Buy Points',
                 'Payment': f'${amount:.2f} (UGX {amount * 3500:.2f})',
                 'From': account_number,
-                'To': 'ADMIN123',
+                'To': admin_reference,
                 'Time': timestamp
             }
         }

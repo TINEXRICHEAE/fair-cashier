@@ -5,8 +5,6 @@ import random
 from django.contrib.auth.models import BaseUserManager
 from django.contrib.auth.models import AbstractBaseUser
 from django.db import models
-
-
 from django.contrib.auth.models import Group as DjangoGroup
 
 
@@ -81,28 +79,6 @@ class UsersManager(BaseUserManager):
         user.set_password(password)
         user.save(using=self._db)
 
-        # Assign the user to the appropriate group
-        if user.role == 'admin':
-            # Assign to the 'Admins' group with the superadmin as the admin
-            superadmin = Users.objects.filter(role='superadmin').first()
-            if superadmin:
-                group, created = Group.objects.get_or_create(
-                    name='Admins',
-                    superadmin=superadmin
-                )
-                user.group = group
-                user.save()
-        elif user.role == 'end_user':
-            # Assign to the 'End-users' group with the superadmin as the admin
-            superadmin = Users.objects.filter(role='superadmin').first()
-            if superadmin:
-                group, created = Group.objects.get_or_create(
-                    name='End-users',
-                    superadmin=superadmin
-                )
-                user.group = group
-                user.save()
-
         return user
 
     def create_superuser(self, email, password=None, **extra_fields):
@@ -127,9 +103,7 @@ class Users(AbstractBaseUser, PermissionsMixin):
     )
     role = models.CharField(max_length=50, choices=ROLE_CHOICES)
     admin_email = models.EmailField(
-        max_length=50, blank=True, null=True)  # New field for end_user
-    group = models.ForeignKey(
-        'Group', on_delete=models.SET_NULL, null=True, blank=True, related_name='members')
+        max_length=50, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
@@ -146,13 +120,6 @@ class Users(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"User(id={self.user_id}, email={self.email}, role={self.role})"
-
-    # Add these methods for Django's admin and permissions
-    def has_perm(self, perm, obj=None):
-        return self.is_superuser
-
-    def has_module_perms(self, app_label):
-        return self.is_superuser
 
 
 class Points(models.Model):

@@ -1,4 +1,3 @@
-# Import the built-in Group model
 from django.contrib.auth.models import Group as BuiltInGroup
 from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
 from django.contrib import admin
@@ -8,9 +7,24 @@ from django.contrib.contenttypes.models import ContentType
 from .models import Points, Transactions, Users, Group
 
 
+class GroupAdmin(BaseGroupAdmin):
+    # Add your custom fields to the admin interface
+    list_display = ('name', 'admin', 'superadmin')
+    search_fields = ('name', 'admin__email', 'superadmin__email')
+    # Ensure permissions are displayed properly
+    filter_horizontal = ('permissions',)
+
+
+# Register your custom Group model
+admin.site.register(Group, GroupAdmin)
+# Unregister the built-in Group model
+admin.site.unregister(BuiltInGroup)
+
+
+@admin.register(Users)
 class UsersAdmin(UserAdmin):
     # Fields to display in the list view
-    list_display = ('email', 'role', 'admin_email', 'group', 'is_active',
+    list_display = ('email', 'role', 'admin_email', 'is_active',
                     'is_staff', 'is_superuser', 'created_at', 'updated_at')
 
     # Fields to search by
@@ -23,13 +37,13 @@ class UsersAdmin(UserAdmin):
     filter_horizontal = ('user_permissions', 'groups')
 
     # List filters
-    list_filter = ('is_staff', 'is_superuser', 'is_active', 'role', 'group')
+    list_filter = ('is_staff', 'is_superuser', 'is_active', 'role')
 
     # Define fieldsets for the add/edit user page
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         ('Personal Info', {
-         'fields': ('role', 'admin_email', 'group', 'groups')}),
+         'fields': ('role', 'admin_email', 'groups')}),
         ('Permissions', {'fields': ('is_active',
          'is_staff', 'is_superuser', 'user_permissions')}),
     )
@@ -38,7 +52,7 @@ class UsersAdmin(UserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'password1', 'password2', 'role', 'admin_email', 'group', 'groups', 'user_permissions'),
+            'fields': ('email', 'password1', 'password2', 'role', 'admin_email', 'groups', 'user_permissions'),
 
         }),
     )
@@ -54,64 +68,54 @@ class UsersAdmin(UserAdmin):
             if obj.role == 'admin':
                 obj.is_staff = True
                 obj.is_superuser = False
-                # Assign the user to the 'Admins' group with the superadmin as the admin
-                superadmin = Users.objects.filter(role='superadmin').first()
-                if superadmin:
-                    group, created = Group.objects.get_or_create(
-                        name='Admins',
-                        superadmin=superadmin
-                    )
-                    obj.group = group
             elif obj.role == 'superadmin':
                 obj.is_staff = True
                 obj.is_superuser = True
-                # Superadmin does not belong to any group
-                obj.group = None
             else:
                 obj.is_staff = False
                 obj.is_superuser = False
-                # Assign the user to the 'End-users' group with the superadmin as the admin
-                superadmin = Users.objects.filter(role='superadmin').first()
-                if superadmin:
-                    group, created = Group.objects.get_or_create(
-                        name='End-users',
-                        superadmin=superadmin
-                    )
-                    obj.group = group
-
             # Set is_active to True by default
             obj.is_active = True
 
         # Save the user first
         super().save_model(request, obj, form, change)
 
-        # Assign all permissions for Users, Points, and Transactions if the role is 'admin' or 'superadmin'
-        if not change and (obj.role == 'admin' or obj.role == 'superadmin'):
-            models = [Users, Points, Transactions]
-            for model in models:
-                content_type = ContentType.objects.get_for_model(model)
-                permissions = Permission.objects.filter(
-                    content_type=content_type)
-                obj.user_permissions.add(*permissions)
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        is_superuser = request.user.is_superuser
+
+        if not is_superuser:
+            # form.base_fields['email'].disabled = True
+            form.base_fields['role'].disabled = True
+            form.base_fields['is_superuser'].disabled = True
+            form.base_fields['user_permissions'].disabled = True
+            form.base_fields['groups'].disabled = True
+        return form
 
 
-admin.site.register(Users, UsersAdmin)
-# Register your models here.
-admin.site.register(Points)        # Registering Points model
-admin.site.register(Transactions)   # Registering Transactions model
-# Registering Group model
-# Registering Users model with custom admin class
+@admin.register(Points)
+class PointsAdmin(admin.ModelAdmin):
+    list_display = ("points_balance", )
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        is_superuser = request.user.is_superuser
+
+        if not is_superuser:
+            form.base_fields['points_balance'].disabled = True
+        return form
 
 
-class GroupAdmin(BaseGroupAdmin):
-    # Add your custom fields to the admin interface
-    list_display = ('name', 'admin', 'superadmin')
-    search_fields = ('name', 'admin__email', 'superadmin__email')
-    # Ensure permissions are displayed properly
-    filter_horizontal = ('permissions',)
+@admin.register(Transactions)
+class TransactionsAdmin(admin.ModelAdmin):
+    list_display = ("transaction_type", )
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        is_superuser = request.user.is_superuser
+
+        if not is_superuser:
+            form.base_fields['transaction_type'].disabled = True
+        return form
 
 
-# Register your custom Group model
-admin.site.register(Group, GroupAdmin)
-# Unregister the built-in Group model
-admin.site.unregister(BuiltInGroup)

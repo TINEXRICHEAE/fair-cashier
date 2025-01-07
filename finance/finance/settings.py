@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'payments'
+    'payments',
+    'guardian',
 ]
 
 MIDDLEWARE = [
@@ -89,6 +90,9 @@ DATABASES = {
         'PASSWORD': config('DATABASE_PASSWORD'),
         'HOST': config('DATABASE_HOST'),
         'PORT': config('DATABASE_PORT'),
+        'OPTIONS': {
+            'charset': 'utf8',  # Use utf8 instead of utf8mb4
+        },
     }
 }
 
@@ -97,6 +101,7 @@ AUTH_USER_MODEL = 'payments.Users'
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'payments.backends.EmailBackend',
+    'guardian.backends.ObjectPermissionBackend',
 ]
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

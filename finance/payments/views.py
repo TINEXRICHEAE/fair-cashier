@@ -59,38 +59,12 @@ def register_user(request):
             is_staff=(role == 'admin' or role == 'superadmin'),
             is_superuser=(role == 'superadmin'),
         )
-
-        # Assign the user to the appropriate group
-        if role == 'admin':
-            # Assign to the 'Admins' group with the superadmin as the admin
-            superadmin = Users.objects.filter(role='superadmin').first()
-            if not superadmin:
-                return JsonResponse({'error': 'Superadmin not found'}, status=400)
-            group, created = Group.objects.get_or_create(
-                name='Admins',
-                superadmin=superadmin
-            )
-            user.group = group
-            user.save()
-        elif role == 'end_user':
-            # Assign to the 'End-users' group with the superadmin as the admin
-            superadmin = Users.objects.filter(role='superadmin').first()
-            if not superadmin:
-                return JsonResponse({'error': 'Superadmin not found'}, status=400)
-            group, created = Group.objects.get_or_create(
-                name='End-users',  # New group for end_users
-                superadmin=superadmin
-            )
-            user.group = group
-            user.save()
-
         # Return success response
         return JsonResponse({
             'message': 'User registered successfully',
             'user_id': user.user_id,
             'email': user.email,
-            'role': user.role,
-            'group': user.group.name if user.group else None
+            'role': user.role
         }, status=201)
 
     return render(request, 'register_user.html')

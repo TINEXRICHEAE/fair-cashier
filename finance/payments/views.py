@@ -62,7 +62,7 @@ def register_user(request):
         # Return success response
         return JsonResponse({
             'message': 'User registered successfully',
-            'user_id': user.user_id,
+            'user_id': user.id,
             'email': user.email,
             'role': user.role
         }, status=201)
@@ -74,8 +74,6 @@ def login_user(request):
     if request.method == 'POST':
         email = request.POST.get('email')
         password = request.POST.get('password')
-        print(f'Login Email: {email}')
-        print(f'Login Password: {password}')
 
         if not email or not password:
             return JsonResponse({'error': 'Email and password are required'}, status=400)
@@ -84,11 +82,9 @@ def login_user(request):
         user = authenticate(request, email=email, password=password)
         if user is not None:
             login(request, user)
-            print(f'Session after login: {request.session.items()}')
-            print(f'User authenticated: {request.user.is_authenticated}')
             return JsonResponse({
                 'message': 'Login successful',
-                'user_id': user.user_id,
+                'user_id': user.id,
                 'email': user.email,
                 'role': user.role
             }, status=200)
@@ -131,7 +127,7 @@ def points_view(request):
 
         # Return the points data
         return JsonResponse({
-            'user_id': points.user_id.user_id,  # Access the user_id from the Users instance
+            'user_id': points.user_id.id,  # Access the user_id from the Users instance
             'points_balance': points.points_balance,
             'points_earned': points.points_earned,
             'points_used': points.points_used,
@@ -209,7 +205,7 @@ def points_view(request):
         else:
             # For non-end users (admins or superadmins), return their current points data
             return JsonResponse({
-                'user_id': points.user_id.user_id,  # Access the user_id from the Users instance
+                'user_id': points.user_id.id,  # Access the user_id from the Users instance
                 'points_balance': points.points_balance,
                 'points_earned': points.points_earned,
                 'points_used': points.points_used,
@@ -219,7 +215,7 @@ def points_view(request):
 
         # Return the updated points data for end users
         return JsonResponse({
-            'user_id': points.user_id.user_id,  # Access the user_id from the Users instance
+            'user_id': points.user_id.id,  # Access the user_id from the Users instance
             'points_balance': points.points_balance,
             'points_earned': points.points_earned,
             'points_used': points.points_used,
@@ -259,7 +255,7 @@ def buy_points(request):
 
             if response.status_code == 200:
                 points, created = Points.objects.get_or_create(
-                    user_id=request.user.user_id
+                    user_id=request.user.id
                 )
                 points.points_balance += points_to_buy
                 points.save()
@@ -320,7 +316,7 @@ def sell_points(request):
 
             amount = points_to_sell / 128
 
-            points = get_object_or_404(Points, user_id=request.user.user_id)
+            points = get_object_or_404(Points, user_id=request.user.id)
             if points.points_balance >= points_to_sell:
                 response = process_payment(
                     amount, payment_details, payment_channel, 'Sell Points', request
@@ -391,7 +387,7 @@ def share_points(request):
 
             # Find the user (sender)
             sender_points = get_object_or_404(
-                Points, user_id=request.user.user_id)
+                Points, user_id=request.user.id)
             # Check if the user has enough points
             if sender_points.points_balance >= points_to_share:
                 # Find the recipient
@@ -407,7 +403,7 @@ def share_points(request):
 
                 # Update recipient's points
                 receiver_points, created = Points.objects.get_or_create(
-                    user_id=receiver.user_id
+                    user_id=receiver.id
                 )
                 receiver_points.points_balance += points_to_share
                 receiver_points.save()
@@ -540,6 +536,13 @@ def user_profile(request):
                     'status': 'error',
                     'message': 'Only end users can update their admin email.'
                 }, status=403)
+
+            # Check if the provided admin email corresponds to an admin user
+            if admin_email and not Users.objects.filter(email=admin_email, role='admin').exists():
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'The provided admin email does not correspond to an admin user.'
+                }, status=400)
 
             # Update the admin_email field
             request.user.admin_email = admin_email

@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import dj_database_url
 from pathlib import Path
 import os
 from decouple import config
@@ -82,19 +83,12 @@ WSGI_APPLICATION = 'finance.wsgi.application'
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 } """
+
+# Parse the DATABASE_URL environment variable
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': config('DATABASE_NAME'),
-        'USER': config('DATABASE_USER'),
-        'PASSWORD': config('DATABASE_PASSWORD'),
-        'HOST': config('DATABASE_HOST'),
-        'PORT': config('DATABASE_PORT'),
-        'OPTIONS': {
-            'charset': 'utf8',  # Use utf8 instead of utf8mb4
-        },
-    }
+    'default': dj_database_url.config(default=config('DATABASE_URL'))
 }
+
 
 AUTH_USER_MODEL = 'payments.Users'
 
@@ -103,6 +97,8 @@ AUTHENTICATION_BACKENDS = [
     'payments.backends.EmailBackend',
     'guardian.backends.ObjectPermissionBackend',
 ]
+# Disable anonymous user creation in django-guardian
+ANONYMOUS_USER_NAME = None
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 

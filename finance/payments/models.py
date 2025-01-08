@@ -40,21 +40,10 @@ class Group(DjangoGroup):  # Inherit from Django's built-in Group model
 
 
 class UsersManager(BaseUserManager):
-    def generate_user_id(self):
-        """Generate a unique 16-digit user_id."""
-        while True:
-            user_id = random.randint(1000000000000000, 9999999999999999)
-            if not Users.objects.filter(user_id=user_id).exists():
-                return user_id
-
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError('The Email field must be set')
         email = self.normalize_email(email)
-
-        # Generate a unique user_id if not provided
-        if 'user_id' not in extra_fields:
-            extra_fields['user_id'] = self.generate_user_id()
 
         # Set a default role if not provided
         if 'role' not in extra_fields:
@@ -93,7 +82,7 @@ class UsersManager(BaseUserManager):
 
 
 class Users(AbstractBaseUser, PermissionsMixin):
-    user_id = models.BigIntegerField(primary_key=True)
+    # Remove the user_id field
     email = models.CharField(unique=True, max_length=50)
     password = models.CharField(max_length=128)
     ROLE_CHOICES = (
@@ -102,8 +91,7 @@ class Users(AbstractBaseUser, PermissionsMixin):
         ('superadmin', 'Super Admin'),
     )
     role = models.CharField(max_length=50, choices=ROLE_CHOICES)
-    admin_email = models.EmailField(
-        max_length=50, blank=True, null=True)
+    admin_email = models.EmailField(max_length=50, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
@@ -119,7 +107,7 @@ class Users(AbstractBaseUser, PermissionsMixin):
         db_table = 'users'
 
     def __str__(self):
-        return f"User(id={self.user_id}, email={self.email}, role={self.role})"
+        return f"User(id={self.id}, email={self.email}, role={self.role})"
 
 
 class Points(models.Model):

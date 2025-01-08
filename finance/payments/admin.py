@@ -1,3 +1,4 @@
+from .models import Users
 from django.contrib.auth.models import Group as BuiltInGroup
 from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
 from django.contrib import admin
@@ -24,7 +25,7 @@ admin.site.unregister(BuiltInGroup)
 @admin.register(Users)
 class UsersAdmin(UserAdmin):
     # Fields to display in the list view
-    list_display = ('email', 'role', 'admin_email', 'is_active',
+    list_display = ('id', 'email', 'role', 'admin_email', 'is_active',
                     'is_staff', 'is_superuser', 'created_at', 'updated_at')
 
     # Fields to search by
@@ -53,17 +54,12 @@ class UsersAdmin(UserAdmin):
         (None, {
             'classes': ('wide',),
             'fields': ('email', 'password1', 'password2', 'role', 'admin_email', 'groups', 'user_permissions'),
-
         }),
     )
 
-    # Override the save_model method to set default permissions, role, and generate user_id
+    # Override the save_model method to set default permissions and role
     def save_model(self, request, obj, form, change):
         if not change:  # Only during creation
-            # Generate a unique user_id if not provided
-            if not obj.user_id:
-                obj.user_id = Users.objects.generate_user_id()
-
             # Set is_staff and is_superuser based on the role
             if obj.role == 'admin':
                 obj.is_staff = True
@@ -85,7 +81,6 @@ class UsersAdmin(UserAdmin):
         is_superuser = request.user.is_superuser
 
         if not is_superuser:
-            # form.base_fields['email'].disabled = True
             form.base_fields['role'].disabled = True
             form.base_fields['is_superuser'].disabled = True
             form.base_fields['user_permissions'].disabled = True
@@ -117,5 +112,3 @@ class TransactionsAdmin(admin.ModelAdmin):
         if not is_superuser:
             form.base_fields['transaction_type'].disabled = True
         return form
-
-

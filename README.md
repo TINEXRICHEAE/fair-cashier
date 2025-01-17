@@ -32,13 +32,13 @@ To set up the project locally, follow these steps:
    ```
 ## Setting Up the .env File
 Before running the application, you need to set up the .env file with the necessary environment variables. Create a .env file in the root directory of your project and add the following configuration:
-# Database configuration
+### Database configuration
 DATABASE_URL=your_database_url_here
 This is from online database service external connection url for example render.
-# Secret key for Django
+### Secret key for Django
 SECRET_KEY='your_secret_key_here'
 
-# Other sensitive information
+### Other sensitive information
 API_KEY=your_api_key_here
 ## Usage
 After installation, you can run the application using the following command:

@@ -1,7 +1,7 @@
 # Fair Cashier Finance
 
 ## Description
-Fair Cashier Finance is a points-based payment application designed to help users track users' expenditure and earnings when using digital services on various apllication types. The application provides a transparent and secure platform for users to manage their points-based transactions with full accountability for all the money spent or gained within a particular digital application. Users can easily buy, sell, and share points, providing a flexible and transparent payment system. The application features a user-friendly interface that allows users to track their points balance and view transaction history, ensuring a seamless financial management experience.
+Fair Cashier Finance is a points-based payment application designed to help users track their expenditure and earnings when using digital services on various apllication types. The application provides a transparent and secure platform for users to manage their points-based transactions with full accountability for all the money spent or gained within a particular digital application. Users can easily buy, sell, and share points, providing a flexible and transparent payment system. The application features a user-friendly interface that allows users to track their points balance and view transaction history, ensuring a seamless financial management experience.
 
 ## Features
 - Points balance tracking

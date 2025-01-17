@@ -38,6 +38,8 @@ class Group(DjangoGroup):  # Inherit from Django's built-in Group model
         else:
             return f"Group(name={self.name})"
 
+from django.db import models
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 
 class UsersManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -80,9 +82,24 @@ class UsersManager(BaseUserManager):
 
         return self.create_user(email, password, **extra_fields)
 
+    def create_anonymous_user(self):
+        """Create an anonymous user if it doesn't already exist."""
+        anonymous_email = "anonymous@example.com"
+        if not self.filter(email=anonymous_email).exists():
+            anonymous_user = self.create(
+                email=anonymous_email,
+                role="end_user",
+                is_active=False,  # Anonymous users should not be active
+                is_staff=False,
+                is_superuser=False,
+            )
+            anonymous_user.set_unusable_password()  # Anonymous users should not have a password
+            anonymous_user.save()
+            return anonymous_user
+        return None
+
 
 class Users(AbstractBaseUser, PermissionsMixin):
-    # Remove the user_id field
     email = models.CharField(unique=True, max_length=50)
     password = models.CharField(max_length=128)
     ROLE_CHOICES = (
@@ -108,7 +125,6 @@ class Users(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"User(id={self.id}, email={self.email}, role={self.role})"
-
 
 class Points(models.Model):
     points_id = models.AutoField(primary_key=True)

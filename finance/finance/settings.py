@@ -97,8 +97,9 @@ AUTHENTICATION_BACKENDS = [
     'payments.backends.EmailBackend',
     'guardian.backends.ObjectPermissionBackend',
 ]
-# Disable anonymous user creation in django-guardian
-ANONYMOUS_USER_NAME = None
+# Use your custom user model for guardian
+ANONYMOUS_USER_NAME = "anonymous@example.com"  # Email of the anonymous user you created
+
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 

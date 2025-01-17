@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_migrate
 from django.dispatch import receiver
 from django.contrib.auth.models import Permission
 from .models import Users, Group
@@ -33,3 +33,10 @@ def assign_user_to_group(sender, instance, created, **kwargs):
                     superadmin=superadmin  # Set the superadmin for the group
                 )
                 instance.groups.add(group)
+
+
+
+
+def create_anonymous_user(sender, **kwargs):
+    Users.objects.create_anonymous_user()
+

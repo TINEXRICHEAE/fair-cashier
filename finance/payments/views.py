@@ -1,29 +1,15 @@
 from django.db.models import Q  # Import the Q object
-from .models import Transactions
-from django.contrib.auth import authenticate
 from django.utils import timezone
 from .models import Points, Users, Transactions, Group
-from django.shortcuts import get_object_or_404
 import json
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
 from .payment_processor import process_payment
 from .models import Users, Points, Transactions
-from .models import Points, Users
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import logout
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 import logging
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import login
-from django.shortcuts import redirect
-from django.contrib.auth.hashers import check_password
-from .models import Users
-from django.contrib.auth.hashers import make_password
 from django.http import JsonResponse
-import string
-import random
-from django.shortcuts import render
 
 
 def dashboard(request):

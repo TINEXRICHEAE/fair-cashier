@@ -27,6 +27,7 @@ To set up the project locally, follow these steps:
    ```
 4. Install the required dependencies:
    ```bash
+   path\to\.venv\Scripts\python.exe -m pip install --upgrade pip --trusted-host files.pythonhosted.org --trusted-host pypi.org --trusted-host files.pypi.org
    pip install -r requirements.txt
    pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements.txt
    pip install <dependency> --trusted-host pypi.org --trusted-host files.pythonhosted.org # for specific dependencies
